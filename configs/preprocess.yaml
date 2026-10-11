@@ -1,0 +1,26 @@
+# Preprocessing Configuration
+dataset: eicu
+target: mortality
+observation_window_hours: 24
+
+# Preprocessing parameters
+scaling_method: zscore  # zscore, minmax, none
+discretization_method: quantile  # quantile, uniform, kmeans, none
+n_bins: 10
+
+# Feature engineering
+add_missingness_indicators: true
+clip_outliers: true
+add_temporal_features: false
+add_comorbidity_count: true
+
+# Partitioning
+partition_method: hospital  # hospital, dirichlet, label_skew, feature_skew, quantity_skew
+n_clients: 5
+dirichlet_alpha: 0.5
+test_size: 0.2
+random_state: 42
+
+# Features to use (will be auto-detected if not specified)
+# numeric_features: []
+# categorical_features: []

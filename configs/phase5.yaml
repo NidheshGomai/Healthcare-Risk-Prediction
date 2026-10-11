@@ -1,0 +1,32 @@
+# Phase 5 Configuration: Federated Models & Privacy
+
+# Random seed
+random_state: 42
+
+# --- Federated Forest ---
+forest:
+  model_types: [rf, dt]
+  n_estimators: 50        # trees per client (RF only)
+  max_depth: 10
+  weightings: [uniform, performance, sample_count]
+
+# --- Federated Naive Bayes ---
+naive_bayes:
+  types: [gaussian, categorical]
+  clip_bound: 10.0        # feature clipping for DP sensitivity
+
+# --- Differential Privacy ---
+dp:
+  epsilons: [0.1, 0.5, 1.0, 2.0, 5.0, 10.0]
+  mechanism: laplace       # laplace or gaussian
+  delta: 1.0e-5           # only used for Gaussian mechanism
+  n_trials: 3             # average over multiple DP trials
+
+# --- Secure Aggregation ---
+secure_agg:
+  enabled: true
+  model_type: logistic     # test SecAgg on FedAvg logistic
+  num_rounds: 10
+
+# --- Output ---
+output_dir: results

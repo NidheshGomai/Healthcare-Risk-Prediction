@@ -1,0 +1,13 @@
+# Federated Learning Configuration
+
+# K-means settings
+kmeans_k_range: [5]
+
+# FL settings
+model_type: logistic  # logistic or linear
+num_rounds: 10
+num_clients: 5
+client_fraction: 1.0
+
+# Random seed
+random_state: 42

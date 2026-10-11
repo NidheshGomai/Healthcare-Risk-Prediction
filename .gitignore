@@ -1,0 +1,51 @@
+# Data - NEVER commit patient data
+data/raw/
+data/processed/
+*.csv
+*.parquet
+*.h5
+*.feather
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Results (large files)
+results/*.png
+results/*.pdf
+results/*.csv
+results/*.pkl
+results/*.joblib
+!results/.gitkeep
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Model checkpoints
+*.pt
+*.pth
+*.ckpt
+models/

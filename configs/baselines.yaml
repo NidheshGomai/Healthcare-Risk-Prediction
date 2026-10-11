@@ -1,0 +1,26 @@
+# Baseline Experiments Configuration
+n_seeds: 5
+random_state: 42
+
+# Models to run (subset of all available)
+# Available: decision_tree, random_forest, gaussian_nb, categorical_nb, logistic_regression, linear_regression
+models:
+  - decision_tree
+  - random_forest
+  - gaussian_nb
+  - categorical_nb
+  - logistic_regression
+  - linear_regression
+
+# Cross-validation
+use_cv: true
+cv_folds: 5
+cv_scoring: roc_auc
+
+# Output
+output_dir: results
+save_models: false
+model_dir: models
+
+# Calibration
+calibrate: false  # Calibrate probabilities with isotonic regression

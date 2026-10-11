@@ -1,0 +1,23 @@
+Rule 1 [Support: 1 patients, Mortality Risk: 0.5%]:
+  IF age <= 4.50 AND sofa_score <= 3.50 AND apache_score <= 6.50 THEN Predicted Mortality = 0 (Risk: 0.5%, Support: 1 patients)
+
+Rule 2 [Support: 1 patients, Mortality Risk: 7.0%]:
+  IF age <= 4.50 AND sofa_score <= 3.50 AND apache_score > 6.50 THEN Predicted Mortality = 0 (Risk: 7.0%, Support: 1 patients)
+
+Rule 3 [Support: 1 patients, Mortality Risk: 10.6%]:
+  IF age <= 4.50 AND sofa_score > 3.50 AND apache_score <= 6.50 THEN Predicted Mortality = 0 (Risk: 10.6%, Support: 1 patients)
+
+Rule 4 [Support: 1 patients, Mortality Risk: 31.5%]:
+  IF age <= 4.50 AND sofa_score > 3.50 AND apache_score > 6.50 THEN Predicted Mortality = 0 (Risk: 31.5%, Support: 1 patients)
+
+Rule 5 [Support: 1 patients, Mortality Risk: 10.4%]:
+  IF age > 4.50 AND sofa_score <= 3.50 AND apache_score <= 4.50 THEN Predicted Mortality = 0 (Risk: 10.4%, Support: 1 patients)
+
+Rule 6 [Support: 1 patients, Mortality Risk: 34.9%]:
+  IF age > 4.50 AND sofa_score <= 3.50 AND apache_score > 4.50 THEN Predicted Mortality = 0 (Risk: 34.9%, Support: 1 patients)
+
+Rule 7 [Support: 1 patients, Mortality Risk: 52.9%]:
+  IF age > 4.50 AND sofa_score > 3.50 AND apache_score <= 3.50 THEN Predicted Mortality = 1 (Risk: 52.9%, Support: 1 patients)
+
+Rule 8 [Support: 1 patients, Mortality Risk: 81.4%]:
+  IF age > 4.50 AND sofa_score > 3.50 AND apache_score > 3.50 THEN Predicted Mortality = 1 (Risk: 81.4%, Support: 1 patients)

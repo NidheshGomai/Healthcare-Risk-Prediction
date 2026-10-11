@@ -1,0 +1,21 @@
+# Feature Scaling Study Configuration
+n_iterations: 1000
+random_state: 42
+
+# Learning rates to test (log scale)
+learning_rates: [0.0001, 0.001, 0.01, 0.1, 1.0]
+
+# Scaling methods to compare
+scaling_methods:
+  - none
+  - minmax
+  - zscore
+
+# Batch sizes (None = batch GD)
+batch_sizes:
+  - null  # batch GD
+  - 32    # mini-batch SGD
+  - 64    # mini-batch SGD
+
+# Federated scaling comparison
+fed_learning_rate: 0.01
