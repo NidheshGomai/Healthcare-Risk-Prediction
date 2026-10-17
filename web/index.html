@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Learning Without Sharing</title>
+  <meta name="description" content="Privacy-preserving federated learning for explainable ICU mortality risk prediction across five hospitals.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script>
+    // Apply the saved theme before first paint to avoid a flash
+    try {
+      var t = localStorage.getItem("theme");
+      if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+    } catch (e) {}
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <div class="progress" aria-hidden="true"><div class="progress__bar" id="progress-bar"></div></div>
+
+  <header class="topbar">
+    <a class="topbar__brand" href="#top">Learning <em>without</em> sharing</a>
+    <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch color theme">
+      <svg class="icon icon--sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      <svg class="icon icon--moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    </button>
+  </header>
+
+  <nav class="chapter-nav" aria-label="Chapters">
+    <ol>
+      <li><a href="#problem" data-label="The problem"><span class="sr-only">The problem</span></a></li>
+      <li><a href="#federation" data-label="The federation"><span class="sr-only">The federation</span></a></li>
+      <li><a href="#results" data-label="The results"><span class="sr-only">The results</span></a></li>
+      <li><a href="#privacy" data-label="Privacy"><span class="sr-only">Privacy</span></a></li>
+      <li><a href="#explain" data-label="Explainability"><span class="sr-only">Explainability</span></a></li>
+      <li><a href="#explorer" data-label="Risk explorer"><span class="sr-only">Risk explorer</span></a></li>
+      <li><a href="#beyond" data-label="Beyond classification"><span class="sr-only">Beyond classification</span></a></li>
+      <li><a href="#outcomes" data-label="Course outcomes"><span class="sr-only">Course outcomes</span></a></li>
+    </ol>
+  </nav>
+
+  <main id="main">
+
+    <!-- ============ HERO ============ -->
+    <section class="hero" id="top">
+      <div class="hero__text">
+        <p class="kicker">A machine learning lab project · ICU mortality risk</p>
+        <h1 class="hero__title">Five hospitals. One model. <span class="accent">Zero</span> shared records.</h1>
+        <p class="hero__lede">
+          Hospitals can't pool patient records, but a risk model trained at one site rarely
+          generalises to the next. This project shows how they can learn together anyway,
+          with federated learning, formal privacy guarantees, and explanations a clinician can audit.
+        </p>
+        <dl class="hero__stats">
+          <div><dt>Federated RF AUROC</dt><dd>0.765</dd></div>
+          <div><dt>vs single-hospital</dt><dd>+0.20</dd></div>
+          <div><dt>Raw records shared</dt><dd>0</dd></div>
+        </dl>
+      </div>
+      <div class="hero__art" id="hero-art" aria-hidden="true"></div>
+      <a class="scroll-cue" href="#problem">
+        <span>Read the story</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg>
+      </a>
+    </section>
+
+    <!-- ============ 1. PROBLEM ============ -->
+    <section class="chapter" id="problem" aria-labelledby="problem-title">
+      <header class="chapter__head reveal">
+        <p class="chapter__num">Chapter 1</p>
+        <h2 id="problem-title">The data that can't move</h2>
+      </header>
+
+      <div class="prose reveal">
+        <p class="dropcap">
+          Every ICU collects the signals that predict who is at risk of dying: age, organ-failure
+          scores, blood gases, blood pressure. But privacy law (HIPAA in the US, GDPR in Europe)
+          and plain ethics stop hospitals from copying those records into one central database.
+        </p>
+        <p>
+          So each hospital trains on its own patients. The trouble is that patients, protocols and
+          equipment differ from site to site. A model that looks fine at home can stumble a few
+          kilometres away. The question this project asks is simple:
+          <strong>can hospitals get the benefit of each other's data without ever seeing it?</strong>
+        </p>
+      </div>
+
+      <ul class="fact-strip reveal" id="fact-strip" aria-label="Dataset facts"></ul>
+
+      <div class="figure-grid reveal">
+        <figure class="plate">
+          <button class="plate__zoom" type="button" data-zoom="../results/figures/class_balance.png" data-caption="Class balance across the five hospital partitions.">
+            <img src="../results/figures/class_balance.png" alt="Bar charts of survived vs deceased counts per hospital, showing roughly 10% mortality" loading="lazy">
+          </button>
+          <figcaption><span class="fig-label">Fig. 1</span> Class balance. Roughly one in ten ICU patients dies in hospital, so a model that predicts "survives" for everyone is 90% accurate and useless. We report AUROC and AUPRC instead.</figcaption>
+        </figure>
+        <figure class="plate">
+          <button class="plate__zoom" type="button" data-zoom="../results/figures/distribution_shift.png" data-caption="Feature distribution shift between hospitals.">
+            <img src="../results/figures/distribution_shift.png" alt="Overlaid distributions of key features per hospital showing shifted means" loading="lazy">
+          </button>
+          <figcaption><span class="fig-label">Fig. 2</span> Distribution shift. The same features look different at each hospital: this is the non-IID problem that makes single-site models brittle.</figcaption>
+        </figure>
+      </div>
+
+      <details class="more reveal">
+        <summary>How the data was prepared (CO1)</summary>
+        <ol class="steps-list">
+          <li><strong>Imputation:</strong> median for continuous vitals and labs, mode for categorical variables.</li>
+          <li><strong>Range clipping:</strong> physiologically impossible values (for example heart rate outside 20–250) clipped to remove telemetry artefacts.</li>
+          <li><strong>Scaling:</strong> Z-score and Min-Max, fitted only on each hospital's own training data, so nothing leaks.</li>
+          <li><strong>Discretisation:</strong> 10 quantile bins per feature for Categorical Naïve Bayes.</li>
+          <li><strong>Partitioning:</strong> data split by hospital to preserve the natural non-IID structure.</li>
+        </ol>
+      </details>
+    </section>
+
+    <!-- ============ 2. FEDERATION ============ -->
+    <section class="chapter chapter--wide" id="federation" aria-labelledby="federation-title">
+      <header class="chapter__head reveal">
+        <p class="chapter__num">Chapter 2</p>
+        <h2 id="federation-title">Move the model, not the data</h2>
+        <p class="chapter__dek">Federated learning flips the usual pipeline. Scroll through one round.</p>
+      </header>
+
+      <div class="scrolly">
+        <div class="scrolly__sticky">
+          <div class="scrolly__graphic" id="fed-diagram" data-step="1" role="img" aria-label="Diagram of five hospitals connected to a central server"></div>
+        </div>
+        <div class="scrolly__steps">
+          <article class="step" data-step="1">
+            <p class="step__num">01</p>
+            <h3>Each hospital trains at home</h3>
+            <p>Every site preprocesses its own records and grows its own models: 50 decision trees
+            for the random forest, or simple counts and sums for Naïve Bayes. Patient records never
+            leave the building.</p>
+          </article>
+          <article class="step" data-step="2">
+            <p class="step__num">02</p>
+            <h3>Only the learning travels</h3>
+            <p>What goes to the server is the <em>result</em> of learning: fitted trees, or
+            sufficient statistics such as class counts, feature sums and sums of squares. These can be
+            noised with differential privacy and masked with secure aggregation first.</p>
+          </article>
+          <article class="step" data-step="3">
+            <p class="step__num">03</p>
+            <h3>The server combines them</h3>
+            <p><strong>Forest Union</strong> pools all 5 × 50 trees into a single soft-voting ensemble.
+            For <strong>Naïve Bayes</strong> the server adds up the statistics, which rebuilds exactly
+            the model you'd get from centralised training.</p>
+            <p class="formula">P(y=1 | x) = Σ<sub>c</sub> Σ<sub>m</sub> w<sub>c,m</sub> · P<sub>c,m</sub>(y=1 | x)</p>
+          </article>
+          <article class="step" data-step="4">
+            <p class="step__num">04</p>
+            <h3>Everyone gets the global model</h3>
+            <p>The combined model goes back to every hospital. Each one now benefits from
+            patterns learned across all five sites, though none of them ever saw another site's patients.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 3. RESULTS ============ -->
+    <section class="chapter chapter--wide" id="results" aria-labelledby="results-title">
+      <header class="chapter__head reveal">
+        <p class="chapter__num">Chapter 3</p>
+        <h2 id="results-title">Together beats alone, and beats pooled</h2>
+        <p class="chapter__dek">
+          We compared three settings for each model: <span class="key key--central">centralised</span>
+          (all data pooled, normally the upper bound), <span class="key key--local">local-only</span>
+          (each hospital alone, averaged) and <span class="key key--fed">federated</span>.
+        </p>
+      </header>
+
+      <div class="callouts reveal">
+        <div class="callout">
+          <p class="callout__value" data-count="0.7654" data-decimals="4">0.7654</p>
+          <p class="callout__label">AUROC for the federated random forest (Forest Union), the best model in the study</p>
+        </div>
+        <div class="callout">
+          <p class="callout__value">+0.20</p>
+          <p class="callout__label">AUROC gained over single-hospital models (0.566 → 0.765)</p>
+        </div>
+        <div class="callout">
+          <p class="callout__value" data-count="100" data-suffix="%">100%</p>
+          <p class="callout__label">prediction agreement between federated and centralised Naïve Bayes</p>
+        </div>
+      </div>
+
+      <div class="chart-card reveal">
+        <div class="chart-card__head">
+          <h3 class="chart-card__title">Model performance by training setting</h3>
+          <div class="segmented" role="group" aria-label="Metric">
+            <button type="button" class="segmented__btn is-active" data-metric="auroc" aria-pressed="true">AUROC</button>
+            <button type="button" class="segmented__btn" data-metric="auprc" aria-pressed="false">AUPRC</button>
+            <button type="button" class="segmented__btn" data-metric="accuracy" aria-pressed="false">Accuracy</button>
+          </div>
+        </div>
+        <div class="legend" aria-hidden="true">
+          <span class="legend__item"><i class="swatch swatch--central"></i>Centralised</span>
+          <span class="legend__item"><i class="swatch swatch--local"></i>Local-only</span>
+          <span class="legend__item"><i class="swatch swatch--fed"></i>Federated</span>
+        </div>
+        <div class="chart" id="results-chart"></div>
+        <p class="chart-note">Logistic regression has no local-only baseline in the report. Its federated version uses FedAvg over 10 rounds.</p>
+      </div>
+
+      <div class="two-col reveal">
+        <div class="prose">
+          <h3>Why would federated beat centralised?</h3>
+          <p>
+            Normally pooling all data is the ceiling. Here, trees grown independently on five
+            different hospital distributions act like a <em>distributed bagging ensemble</em>: each
+            forest makes different mistakes, and soft-voting across 250 trees averages them out.
+            Model variance falls further than a single forest trained on the pooled data.
+          </p>
+          <p>
+            The tree-weighting strategy barely matters, which suggests the gain comes from diversity
+            rather than tuning.
+          </p>
+        </div>
+        <div class="mini-table" id="weighting-table"></div>
+      </div>
+    </section>
+
+    <!-- ============ 4. PRIVACY ============ -->
+    <section class="chapter chapter--wide" id="privacy" aria-labelledby="privacy-title">
+      <header class="chapter__head reveal">
+        <p class="chapter__num">Chapter 4</p>
+        <h2 id="privacy-title">The price of privacy</h2>
+        <p class="chapter__dek">
+          Sending statistics instead of records isn't enough on its own: a clever attacker can
+          sometimes work backwards from them. Two defences close that gap.
+        </p>
+      </header>
+
+      <div class="chart-card reveal">
+        <div class="chart-card__head">
+          <h3 class="chart-card__title">Differential privacy: AUROC vs privacy budget ε</h3>
+        </div>
+        <p class="chart-card__sub">
+          Laplace noise with scale Δf / ε is added to every statistic a hospital sends.
+          Smaller ε means more noise and stronger privacy. Each point is the mean of 3 trials; the band shows ± 1 std.
+        </p>
+        <div class="legend" aria-hidden="true">
+          <span class="legend__item"><i class="swatch swatch--gauss"></i>Gaussian NB</span>
+          <span class="legend__item"><i class="swatch swatch--cat"></i>Categorical NB</span>
+          <span class="legend__item"><i class="swatch swatch--band"></i>Sweet spot (ε 5–10)</span>
+        </div>
+        <div class="chart" id="dp-chart"></div>
+
+        <div class="eps-control">
+          <label class="eps-control__label" for="eps-slider">Choose a privacy budget <span class="eps-control__value" id="eps-value">ε = 5</span></label>
+          <input type="range" id="eps-slider" min="0" max="6" step="1" value="4" aria-describedby="eps-readout">
+          <div class="eps-control__ticks" aria-hidden="true">
+            <span>0.1</span><span>0.5</span><span>1</span><span>2</span><span>5</span><span>10</span><span>∞</span>
+          </div>
+        </div>
+
+        <div class="readout" id="eps-readout" aria-live="polite"></div>
+      </div>
+
+      <div class="secagg reveal">
+        <div class="prose">
+          <h3>Secure aggregation: the server sees only the sum</h3>
+          <p>
+            Each pair of hospitals agrees on a random mask. One adds it, the other subtracts it.
+            Each individual upload looks like noise, but when the server adds all uploads together
+            every mask cancels, leaving the exact true total.
+          </p>
+          <p>Try it: shuffle the masks. The uploads change completely, but the sum never moves.</p>
+          <ul class="checks">
+            <li>Pairwise cancellation verified</li>
+            <li>Aggregate matches plaintext FedAvg</li>
+            <li>Max numerical deviation in experiments: <span class="mono" id="secagg-dev"></span></li>
+          </ul>
+        </div>
+        <div class="secagg__demo" id="secagg-demo"></div>
+      </div>
+    </section>
+
+    <!-- ============ 5. EXPLAINABILITY ============ -->
+    <section class="chapter chapter--wide" id="explain" aria-labelledby="explain-title">
+      <header class="chapter__head reveal">
+        <p class="chapter__num">Chapter 5</p>
+        <h2 id="explain-title">Opening the black box</h2>
+        <p class="chapter__dek">
+          A risk score a clinician can't question is a risk score they won't use. Each hospital
+          computes Gini and TreeSHAP importances locally; only those summaries are aggregated.
+        </p>
+      </header>
+
+      <div class="two-col two-col--chart reveal">
+        <div class="chart-card">
+          <h3 class="chart-card__title">What drives the prediction</h3>
+          <p class="chart-card__sub">Federated feature attribution, top 7 features</p>
+          <div class="chart" id="fi-chart"></div>
+        </div>
+        <div class="prose">
+          <h3>The model agrees with medicine</h3>
+          <p>
+            The top drivers are age, the SOFA organ-failure score and the APACHE acuity score,
+            followed by acid-base markers (bicarbonate, pCO₂) and blood pressure. These are the
+            same signals intensivists already use to triage, which is a basic sanity check that
+            the model learned physiology rather than artefacts.
+          </p>
+          <h3>And the hospitals agree with each other</h3>
+          <p>
+            If each hospital's model relied on completely different features, the global
+            explanation would be meaningless. Across all pairs of hospitals, the feature rankings correlate strongly:
+          </p>
+          <ul class="stat-list" id="consistency-list"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 6. RISK EXPLORER ============ -->
+    <section class="chapter chapter--wide" id="explorer" aria-labelledby="explorer-title">
+      <header class="chapter__head reveal">
+        <p class="chapter__num">Chapter 6</p>
+        <h2 id="explorer-title">Rules a clinician can read</h2>
+        <p class="chapter__dek">
+          A depth-3 surrogate decision tree mimics the federated ensemble with
+          <strong id="fidelity">83.1%</strong> fidelity (Cohen's κ = <span id="kappa">0.51</span>) and turns it into eight
+          IF-THEN rules. Move the sliders to walk the tree.
+        </p>
+      </header>
+
+      <div class="explorer reveal">
+        <div class="explorer__controls">
+          <p class="explorer__hint">Values are <strong>quantile bins (0–9)</strong>: 0 is the lowest tenth of patients, 9 the highest.</p>
+          <div class="field">
+            <label for="ex-age">Age <output id="ex-age-out" for="ex-age">6</output></label>
+            <input type="range" id="ex-age" min="0" max="9" step="1" value="6">
+          </div>
+          <div class="field">
+            <label for="ex-sofa">SOFA score <output id="ex-sofa-out" for="ex-sofa">5</output></label>
+            <input type="range" id="ex-sofa" min="0" max="9" step="1" value="5">
+          </div>
+          <div class="field">
+            <label for="ex-apache">APACHE score <output id="ex-apache-out" for="ex-apache">3</output></label>
+            <input type="range" id="ex-apache" min="0" max="9" step="1" value="3">
+          </div>
+          <div class="presets" role="group" aria-label="Example patients">
+            <button type="button" class="btn" data-preset="1,2,4">Young, stable</button>
+            <button type="button" class="btn" data-preset="7,2,7">Older, high acuity</button>
+            <button type="button" class="btn" data-preset="8,7,8">Critical</button>
+          </div>
+
+          <div class="result" id="ex-result" aria-live="polite"></div>
+        </div>
+        <div class="explorer__tree">
+          <div class="chart" id="tree-chart"></div>
+        </div>
+      </div>
+      <p class="disclaimer reveal">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+        Illustrative surrogate rules from a simulated cohort. This is an academic project and is not for clinical use.
+      </p>
+    </section>
+
+    <!-- ============ 7. BEYOND ============ -->
+    <section class="chapter chapter--wide" id="beyond" aria-labelledby="beyond-title">
+      <header class="chapter__head reveal">
+        <p class="chapter__num">Chapter 7</p>
+        <h2 id="beyond-title">Beyond classification</h2>
+      </header>
+
+      <div class="card-grid">
+        <article class="card reveal">
+          <p class="card__tag">CO2 · Optimisation</p>
+          <h3>Scaling makes gradient descent 15× faster</h3>
+          <p>From-scratch batch gradient descent and mini-batch SGD on ICU length of stay, across 3 scalings, 5 learning rates and 3 batch sizes, checked against the closed-form solution.</p>
+          <div class="hbars" id="scaling-bars"></div>
+          <p class="card__foot">Iterations to converge at each method's best learning rate. Unscaled features give elongated loss contours and need a 100× smaller step.</p>
+        </article>
+        <article class="card reveal">
+          <p class="card__tag">CO4 · Clustering</p>
+          <h3>Finding patient subgroups, federated</h3>
+          <p>K-means picked k = 5 subgroups using the elbow and silhouette methods. In the federated version, each hospital shares only per-cluster counts and coordinate sums, and the server updates the centroids.</p>
+          <p class="formula">μ<sub>k</sub> = Σ<sub>c</sub> S<sub>c,k</sub> / Σ<sub>c</sub> n<sub>c,k</sub></p>
+          <dl class="kv" id="kmeans-kv"></dl>
+          <p class="card__foot">A low ARI and silhouette show that subgroup structure in this cohort is weak. That's an honest finding, and a direction for future work.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ============ 8. OUTCOMES ============ -->
+    <section class="chapter chapter--wide" id="outcomes" aria-labelledby="outcomes-title">
+      <header class="chapter__head reveal">
+        <p class="chapter__num">Appendix</p>
+        <h2 id="outcomes-title">Course outcomes and reproducibility</h2>
+      </header>
+
+      <div class="table-wrap reveal">
+        <table class="co-table" id="co-table">
+          <thead><tr><th scope="col">CO</th><th scope="col">Focus</th><th scope="col">What was built</th><th scope="col">Where</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="repro reveal">
+        <div class="repro__head">
+          <h3>Reproduce every number</h3>
+          <button type="button" class="btn" id="copy-cmds">Copy commands</button>
+        </div>
+        <pre class="code" id="repro-code"></pre>
+        <p class="chart-note">Global random seed 42 (<code>src/utils/seeds.py</code>). All experiments are configured through YAML files in <code>configs/</code>.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p class="footer__title">Privacy-Preserving Federated Learning for Explainable Healthcare Risk Prediction</p>
+    <p>Machine Learning Lab mini project · simulated eICU cohort · not for clinical use.</p>
+  </footer>
+
+  <dialog class="lightbox" id="lightbox">
+    <form method="dialog"><button class="lightbox__close" aria-label="Close">×</button></form>
+    <img id="lightbox-img" alt="">
+    <p id="lightbox-cap"></p>
+  </dialog>
+
+  <div class="tooltip" id="tooltip" role="status" hidden></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
